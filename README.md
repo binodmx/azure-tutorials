@@ -4,8 +4,8 @@
 
 > Make sure to define connection strings and other resources names in Sender.java and Receiver.java
 
-1. Go to `sender` directory and run `mvn package exec:java -Dexec.mainClass=Sender`
-2. Go to `receiver` directory and run `mvn package exec:java -Dexec.mainClass=Receiver`
+1. Go to `receiver` directory and run `mvn package exec:java -Dexec.mainClass=Receiver`
+2. Go to `sender` directory and run `mvn package exec:java -Dexec.mainClass=Sender`
 
 ### azure-service-bus
 
