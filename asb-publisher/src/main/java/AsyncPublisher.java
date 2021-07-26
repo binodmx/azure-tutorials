@@ -72,7 +72,7 @@ public class AsyncPublisher {
                     System.out.println(i + ": Message not sent");
                     System.out.println("Time elapsed: " + (stopTime - startTime) + "ms");
                     ServiceBusException serviceBusException = (ServiceBusException) error;
-                    System.out.println(serviceBusException.isTransient());
+                    System.out.println("isTransient: " + serviceBusException.isTransient());
                 },
                 () -> {
                     long stopTime = System.currentTimeMillis();
