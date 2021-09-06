@@ -1,3 +1,5 @@
+import com.azure.core.amqp.AmqpRetryMode;
+import com.azure.core.amqp.AmqpRetryOptions;
 import com.azure.messaging.servicebus.ServiceBusProcessorClient;
 import com.azure.messaging.servicebus.ServiceBusClientBuilder;
 import com.azure.messaging.servicebus.ServiceBusReceivedMessageContext;
@@ -6,20 +8,30 @@ import com.azure.messaging.servicebus.ServiceBusErrorContext;
 import com.azure.messaging.servicebus.ServiceBusException;
 import com.azure.messaging.servicebus.ServiceBusFailureReason;
 
+import java.time.Duration;
 import java.util.concurrent.CountDownLatch;
 import java.util.concurrent.TimeUnit;
 
 public class Subscriber {
-    static String connectionString = Environment.connectionString1;
+    static String connectionString = Environment.connectionString;
     static String topicName = Environment.topicName;
     static String subName = Environment.subscriptionName;
     static ServiceBusProcessorClient processorClient;
 
-    public static void main(String[] args) throws InterruptedException {
-        // create an instance of the processor through the ServiceBusClientBuilder
+    public static void main(String[] args) {
+        // Create Retry Options for the Service Bus client
+        AmqpRetryOptions amqpRetryOptions = new AmqpRetryOptions();
+        amqpRetryOptions.setDelay(Duration.ofSeconds(1));
+        amqpRetryOptions.setMaxRetries(5);
+        amqpRetryOptions.setMaxDelay(Duration.ofSeconds(15));
+        amqpRetryOptions.setMode(AmqpRetryMode.EXPONENTIAL);
+        amqpRetryOptions.setTryTimeout(Duration.ofSeconds(5));
+
+        // Create an instance of the processor through the ServiceBusClientBuilder
         CountDownLatch countdownLatch = new CountDownLatch(1);
         processorClient = new ServiceBusClientBuilder()
                 .connectionString(connectionString)
+                .retryOptions(amqpRetryOptions)
                 .processor()
                 .topicName(topicName)
                 .subscriptionName(subName)
@@ -30,8 +42,7 @@ public class Subscriber {
     }
 
     static void receiveMessages() {
-        // start processor client
-        System.out.println("Starting the processor client");
+        System.out.println("Starting the processor client.");
         try {
             processorClient.start();
         } catch (Exception e) {
@@ -41,8 +52,7 @@ public class Subscriber {
 
     private static void processMessage(ServiceBusReceivedMessageContext context) {
         ServiceBusReceivedMessage message = context.getMessage();
-        System.out.printf("Processing message. Session: %s, Sequence #: %s. Contents: %s%n", message.getMessageId(),
-                message.getSequenceNumber(), message.getBody());
+        System.out.println("Message received: " + message.getBody());
     }
 
     private static void processError(ServiceBusErrorContext context, CountDownLatch countdownLatch) {
